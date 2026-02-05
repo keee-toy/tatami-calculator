@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>絨毯 畳数・金額計算</title>
 
-<!-- PWA -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#007aff">
 
@@ -29,9 +28,10 @@ select, input {
   margin-top:6px;
 }
 .result {
-  line-height:1.7;
+  line-height:1.8;
   font-size:16px;
 }
+strong { font-size:17px }
 </style>
 </head>
 
@@ -128,13 +128,19 @@ const SHOPS = {
     name: "一般",
     baseType: "cost",
     taxIncluded: false,
-    types: { normal: { label: "通常", price: 800 } }
+    types: {
+      normal: { label: "通常", price: 800 }
+    }
   },
   diamonddry: {
     name: "ダイヤドライ",
     baseType: "cost",
     taxIncluded: false,
-    types: { normal: { label: "通常", price: 950 } }
+    types: {
+      normal: { label: "通常（水洗い）", price: 950 },
+      carpet: { label: "絨毯", price: 1150 },
+      rug: { label: "ラグ", price: 950 }
+    }
   }
 };
 
@@ -144,10 +150,10 @@ const lengthInput = document.getElementById("length");
 const widthInput = document.getElementById("width");
 const result = document.getElementById("result");
 
-Object.entries(SHOPS).forEach(([k, s]) => {
+Object.entries(SHOPS).forEach(([key, shop]) => {
   const opt = document.createElement("option");
-  opt.value = k;
-  opt.textContent = s.name;
+  opt.value = key;
+  opt.textContent = shop.name;
   shopSelect.appendChild(opt);
 });
 
@@ -189,16 +195,21 @@ function calc() {
 
   const shop = SHOPS[shopSelect.value];
   const type = shop.types[typeSelect.value];
+
   const cost = order * normalizeToCost(type.price, shop);
-  const tax = Math.round(cost * TAX);
+  const costTax = cost * 1.1;
+  const retail = cost * 2;
+  const retailTax = retail * 1.1;
 
   result.innerHTML = `
     面積：${area.toFixed(2)}㎡<br>
     実畳数：${tatami.toFixed(2)}畳<br>
     <strong>発注畳数：${order.toFixed(1)}畳</strong><br><br>
+
     下代（税抜）：${cost.toLocaleString()}円<br>
-    下代（税込）：${(cost + tax).toLocaleString()}円<br>
-    上代（税込）：<strong>${((cost * 2) * 1.1).toLocaleString()}円</strong>
+    下代（税込）：${costTax.toLocaleString()}円<br>
+    <strong>上代（税抜）：${retail.toLocaleString()}円</strong><br>
+    <strong>上代（税込）：${retailTax.toLocaleString()}円</strong>
   `;
 }
 
